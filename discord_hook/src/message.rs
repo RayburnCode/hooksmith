@@ -25,6 +25,88 @@ pub fn json_code_block(value: &impl Serialize) -> Result<String, WebhookError> {
 }
 
 // ---------------------------------------------------------------------------
+// AllowedMentions
+// ---------------------------------------------------------------------------
+
+/// Controls which mentions Discord will actually notify.
+///
+/// For user-submitted content (e.g. a lead form) you should call
+/// [`AllowedMentions::none()`] to prevent accidental `@everyone` or role pings.
+#[derive(Serialize, Debug, Clone, Default)]
+pub struct AllowedMentions {
+    /// Parse types to auto-detect and notify.  Empty = no auto-parsing.
+    pub parse: Vec<AllowedMentionType>,
+    /// Explicit role IDs whose mentions should be notified.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub roles: Vec<String>,
+    /// Explicit user IDs whose mentions should be notified.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub users: Vec<String>,
+}
+
+impl AllowedMentions {
+    /// Allow no mentions at all — safe default for user-generated content.
+    pub fn none() -> Self {
+        Self { parse: vec![], roles: vec![], users: vec![] }
+    }
+
+    /// Allow mentions for specific user IDs only.
+    pub fn users(ids: impl IntoIterator<Item = impl Into<String>>) -> Self {
+        Self { parse: vec![], roles: vec![], users: ids.into_iter().map(Into::into).collect() }
+    }
+
+    /// Allow `@everyone` / `@here`, role mentions, and user mentions.
+    pub fn all() -> Self {
+        Self {
+            parse: vec![
+                AllowedMentionType::Everyone,
+                AllowedMentionType::Roles,
+                AllowedMentionType::Users,
+            ],
+            roles: vec![],
+            users: vec![],
+        }
+    }
+}
+
+/// The categories of mentions Discord can auto-parse from message text.
+#[derive(Serialize, Debug, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum AllowedMentionType {
+    Roles,
+    Users,
+    Everyone,
+}
+
+// ---------------------------------------------------------------------------
+// Message flags
+// ---------------------------------------------------------------------------
+
+/// Bitfield constants for the `flags` field on [`WebhookMessage`].
+///
+/// # Example
+///
+/// ```rust
+/// use discord_hook::{WebhookMessage, flags};
+///
+/// let msg = WebhookMessage::builder()
+///     .content("Quiet alert")
+///     .flag(flags::SUPPRESS_NOTIFICATIONS)
+///     .build()
+///     .unwrap();
+/// ```
+pub mod flags {
+    /// Do not include any embeds when serialising this message.
+    pub const SUPPRESS_EMBEDS: u64 = 1 << 2; // 4
+    /// Send the message without triggering a push / desktop notification.
+    pub const SUPPRESS_NOTIFICATIONS: u64 = 1 << 12; // 4096
+    /// Use Components V2 layout. When set, `content`, `embeds`, `files`, and
+    /// `poll` must all be absent — the message body is driven entirely by
+    /// `components`. Can only be set, never unset after creation.
+    pub const IS_COMPONENTS_V2: u64 = 1 << 15; // 32768
+}
+
+// ---------------------------------------------------------------------------
 // Embed sub-types
 // ---------------------------------------------------------------------------
 
@@ -249,6 +331,21 @@ pub struct WebhookMessage {
     /// Rich embeds (up to 10 per message).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub embeds: Vec<Embed>,
+    /// Controls which `@mentions` in `content` actually ping someone.
+    /// Set to [`AllowedMentions::none()`] when passing user-submitted text.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub allowed_mentions: Option<AllowedMentions>,
+    /// Message flags bitfield.  Use constants from [`flags`].
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub flags: Option<u64>,
+    /// Create a new thread with this name and post the message into it.
+    /// Only valid when the webhook targets a forum or media channel.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub thread_name: Option<String>,
+    /// Tag IDs to apply to the newly-created thread.
+    /// Only valid alongside `thread_name` in forum or media channels.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub applied_tags: Vec<String>,
 }
 
 impl WebhookMessage {
@@ -280,6 +377,47 @@ impl WebhookMessageBuilder {
 
     pub fn tts(mut self, tts: bool) -> Self {
         self.inner.tts = Some(tts);
+        self
+    }
+
+    /// Set the allowed mentions for this message.
+    ///
+    /// **Always call `.allowed_mentions(AllowedMentions::none())` when the
+    /// message content includes any user-submitted text**, to prevent
+    /// accidental `@everyone` or role pings.
+    pub fn allowed_mentions(mut self, allowed_mentions: AllowedMentions) -> Self {
+        self.inner.allowed_mentions = Some(allowed_mentions);
+        self
+    }
+
+    /// Apply a message flag from the [`flags`] module.  Can be called multiple
+    /// times to OR flags together.
+    ///
+    /// ```rust
+    /// use discord_hook::{WebhookMessage, flags};
+    ///
+    /// let msg = WebhookMessage::builder()
+    ///     .content("Silent alert")
+    ///     .flag(flags::SUPPRESS_NOTIFICATIONS)
+    ///     .build()
+    ///     .unwrap();
+    /// ```
+    pub fn flag(mut self, flag: u64) -> Self {
+        self.inner.flags = Some(self.inner.flags.unwrap_or(0) | flag);
+        self
+    }
+
+    /// Create a new thread with this name and post the message into it.
+    /// Only valid when the webhook targets a forum or media channel.
+    pub fn thread_name(mut self, name: impl Into<String>) -> Self {
+        self.inner.thread_name = Some(name.into());
+        self
+    }
+
+    /// Apply forum/media channel tag IDs to the thread created by `thread_name`.
+    /// Call multiple times or pass multiple IDs to apply several tags.
+    pub fn applied_tag(mut self, tag_id: impl Into<String>) -> Self {
+        self.inner.applied_tags.push(tag_id.into());
         self
     }
 

@@ -1,5 +1,7 @@
 use reqwest::Client;
 
+use hooksmith_core::{HttpClient, WebhookSender};
+
 use crate::{WebhookError, WebhookMessage};
 
 /// Validate that a webhook URL is HTTPS and targets the Discord API.
@@ -48,7 +50,7 @@ fn validate_url(url: &str) -> Result<(), WebhookError> {
 /// ```
 pub struct WebhookClient {
     url: String,
-    client: Client,
+    client: HttpClient,
 }
 
 impl WebhookClient {
@@ -61,7 +63,7 @@ impl WebhookClient {
     pub fn new(url: impl Into<String>) -> Result<Self, WebhookError> {
         let url = url.into();
         validate_url(&url)?;
-        Ok(Self { url, client: Client::new() })
+        Ok(Self { url, client: HttpClient::new() })
     }
 
     /// Create a client that reuses a pre-configured [`reqwest::Client`].
@@ -76,10 +78,14 @@ impl WebhookClient {
     pub fn with_client(url: impl Into<String>, client: Client) -> Result<Self, WebhookError> {
         let url = url.into();
         validate_url(&url)?;
-        Ok(Self { url, client })
+        Ok(Self { url, client: HttpClient::with_reqwest(client) })
     }
 
     /// Send a [`WebhookMessage`] to Discord.
+    ///
+    /// Uses `?wait=true` so Discord confirms the message was saved before
+    /// responding — errors that would otherwise be silently dropped (e.g. bad
+    /// embed structure) are surfaced as [`WebhookError::ApiError`].
     ///
     /// # Errors
     ///
@@ -88,17 +94,40 @@ impl WebhookClient {
     ///   `retry_after_ms` field tells you how long to wait.
     /// - [`WebhookError::ApiError`] – any other non-2xx response.
     pub async fn send(&self, message: &WebhookMessage) -> Result<(), WebhookError> {
-        let response = self
-            .client
-            .post(&self.url)
-            .json(message)
-            .send()
-            .await?;
+        self.execute(message, None).await
+    }
+
+    /// Send a [`WebhookMessage`] into a specific thread.
+    ///
+    /// Pass the thread's snowflake ID as `thread_id`.  The thread will be
+    /// automatically unarchived if needed.
+    pub async fn send_to_thread(
+        &self,
+        message: &WebhookMessage,
+        thread_id: &str,
+    ) -> Result<(), WebhookError> {
+        self.execute(message, Some(thread_id)).await
+    }
+
+    async fn execute(
+        &self,
+        message: &WebhookMessage,
+        thread_id: Option<&str>,
+    ) -> Result<(), WebhookError> {
+        // Always use wait=true so Discord confirms the message was saved.
+        // Errors that would otherwise be silently dropped (e.g. bad embed
+        // structure) are surfaced as ApiError instead.
+        let mut url = format!("{}?wait=true", self.url);
+        if let Some(tid) = thread_id {
+            url.push_str("&thread_id=");
+            url.push_str(tid);
+        }
+
+        let response = self.client.post_json(&url, message).await?;
 
         let status = response.status();
 
         if status == reqwest::StatusCode::TOO_MANY_REQUESTS {
-            // Discord may send the retry delay in seconds as a float.
             let retry_after_ms = response
                 .headers()
                 .get("retry-after")
@@ -116,5 +145,22 @@ impl WebhookClient {
         }
 
         Ok(())
+    }
+}
+
+impl WebhookSender for WebhookClient {
+    type Message = WebhookMessage;
+    type Error = WebhookError;
+
+    /// Send a [`WebhookMessage`], satisfying the generic [`WebhookSender`] trait.
+    ///
+    /// Identical to the inherent [`WebhookClient::send`] method — use whichever
+    /// is more convenient.  The trait is useful when writing code that is
+    /// generic over notification backends.
+    fn send(
+        &self,
+        message: &WebhookMessage,
+    ) -> impl std::future::Future<Output = Result<(), WebhookError>> + Send {
+        self.execute(message, None)
     }
 }

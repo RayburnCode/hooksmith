@@ -32,13 +32,14 @@
 //! [`WebhookError::RateLimited`] error that contains `retry_after_ms`.
 //! Use that value to back off before retrying.
 
-pub mod webhook_client;
-pub mod webhook_error;
-pub mod webhook_message;
+pub mod client;
+pub mod error;
+pub mod message;
 
-pub use webhook_client::WebhookClient;
-pub use webhook_error::WebhookError;
-pub use webhook_message::{
-    json_code_block, Embed, EmbedAuthor, EmbedBuilder, EmbedField, EmbedFooter, EmbedImage,
-    EmbedThumbnail, WebhookMessage, WebhookMessageBuilder,
+pub use client::WebhookClient;
+pub use error::WebhookError;
+pub use hooksmith_core::WebhookSender;
+pub use message::{
+    flags, json_code_block, AllowedMentionType, AllowedMentions, Embed, EmbedAuthor, EmbedBuilder,
+    EmbedField, EmbedFooter, EmbedImage, EmbedThumbnail, WebhookMessage, WebhookMessageBuilder,
 };

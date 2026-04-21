@@ -2,6 +2,20 @@
 
 # hooksmith
 
+# 1. Log in (one-time — opens browser to get your API token)
+
+cargo login
+
+# 2. Dry-run from inside the crate folder
+
+cd discord_hook
+cargo publish --dry-run
+
+# 3. Actually publish
+
+cargo publish
+
+https://docs.discord.com/developers/resources/webhook
 A collection of Rust webhook crates for sending notifications to external services.
 
 | Crate                            | Description                                |

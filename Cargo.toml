@@ -1,0 +1,11 @@
+[workspace]
+members = ["hooksmith-core", "discord_hook"]
+resolver = "2"
+
+# Shared dependency versions — individual crates opt in with `{ workspace = true }`.
+[workspace.dependencies]
+reqwest    = { version = "0.13.2", features = ["json"], default-features = false }
+serde      = { version = "1",      features = ["derive"] }
+serde_json = "1"
+thiserror  = "2.0.18"
+tokio      = { version = "1", features = ["full"] }
