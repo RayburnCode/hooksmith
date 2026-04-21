@@ -1,5 +1,7 @@
+use crate::retry::RetryPolicy;
 use reqwest::Client;
 use serde::Serialize;
+use std::time::Duration;
 
 /// A thin wrapper around [`reqwest::Client`] shared by all hooksmith service crates.
 ///
@@ -23,7 +25,7 @@ impl HttpClient {
     /// to [`HttpClient::with_reqwest`].
     pub fn new() -> Self {
         let inner = Client::builder()
-            .timeout(std::time::Duration::from_secs(30))
+            .timeout(Duration::from_secs(30))
             .build()
             .expect("failed to initialise reqwest client — TLS backend unavailable");
         Self { inner }
@@ -38,12 +40,91 @@ impl HttpClient {
     }
 
     /// POST `body` serialized as JSON to `url` and return the raw response.
+    ///
+    /// When the **`tracing`** feature is enabled this method emits an
+    /// `info_span` named `hooksmith.post_json` capturing the request URL,
+    /// HTTP status, and wall-clock latency.
     pub async fn post_json(
         &self,
         url: &str,
         body: &impl Serialize,
     ) -> Result<reqwest::Response, reqwest::Error> {
-        self.inner.post(url).json(body).send().await
+        #[cfg(not(feature = "tracing"))]
+        {
+            return self.inner.post(url).json(body).send().await;
+        }
+
+        #[cfg(feature = "tracing")]
+        {
+            use tracing::Instrument;
+            let span = tracing::info_span!("hooksmith.post_json", url = %url);
+            let start = std::time::Instant::now();
+            let result = self
+                .inner
+                .post(url)
+                .json(body)
+                .send()
+                .instrument(span.clone())
+                .await;
+            let latency_ms = start.elapsed().as_millis();
+            let _enter = span.enter();
+            match &result {
+                Ok(resp) => tracing::info!(status = resp.status().as_u16(), latency_ms),
+                Err(err) => tracing::error!(error = %err, latency_ms),
+            }
+            result
+        }
+    }
+
+    /// POST `body` serialized as JSON to `url`, retrying on failure according
+    /// to the supplied [`RetryPolicy`].
+    ///
+    /// Each retry is separated by an exponentially increasing delay
+    /// (`base_delay × 2ⁿ`).  When `policy.jitter` is `true` a random
+    /// fraction of the current step is added to the delay.
+    ///
+    /// Returns the first successful [`reqwest::Response`], or the error from
+    /// the final attempt if all attempts are exhausted.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use hooksmith_core::RetryPolicy;
+    ///
+    /// let policy = RetryPolicy { max_attempts: 4, ..Default::default() };
+    /// let resp = client.post_json_with_retry(url, &payload, &policy).await?;
+    /// ```
+    pub async fn post_json_with_retry(
+        &self,
+        url: &str,
+        body: &impl Serialize,
+        policy: &RetryPolicy,
+    ) -> Result<reqwest::Response, reqwest::Error> {
+        let max = policy.max_attempts.max(1);
+        let mut last_err: Option<reqwest::Error> = None;
+
+        for attempt in 0..max {
+            match self.post_json(url, body).await {
+                Ok(resp) => return Ok(resp),
+                Err(err) => {
+                    let is_last = attempt + 1 >= max;
+                    if !is_last {
+                        let factor = 1u32 << attempt; // 2^attempt
+                        let base = policy.base_delay * factor;
+                        let delay = if policy.jitter {
+                            let jitter: f64 = rand::random();
+                            base + Duration::from_secs_f64(base.as_secs_f64() * jitter)
+                        } else {
+                            base
+                        };
+                        tokio::time::sleep(delay).await;
+                    }
+                    last_err = Some(err);
+                }
+            }
+        }
+
+        Err(last_err.expect("max_attempts is at least 1"))
     }
 
     /// Access the underlying [`reqwest::Client`] for advanced use-cases.

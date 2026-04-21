@@ -14,7 +14,7 @@ cargo publish --dry-run
 # 3. Actually publish
 
 cargo publish
-
+cargo clippy --workspace --all-features --tests -- -D warnings
 https://docs.discord.com/developers/resources/webhook
 A collection of Rust webhook crates for sending notifications to external services.
 

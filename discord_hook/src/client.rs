@@ -187,3 +187,41 @@ impl WebhookSender for WebhookClient {
         self.execute(message, None)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rejects_http_url() {
+        let err = validate_url("http://discord.com/api/webhooks/123/abc").unwrap_err();
+        assert!(matches!(err, WebhookError::InvalidUrl { .. }));
+    }
+
+    #[test]
+    fn rejects_non_discord_url() {
+        let err = validate_url("https://example.com/webhook").unwrap_err();
+        assert!(matches!(err, WebhookError::InvalidUrl { .. }));
+    }
+
+    #[test]
+    fn accepts_valid_discord_url() {
+        assert!(validate_url("https://discord.com/api/webhooks/123456789/abcdef").is_ok());
+    }
+
+    #[test]
+    fn client_new_propagates_invalid_url() {
+        let err = WebhookClient::new("not-a-url").unwrap_err();
+        assert!(matches!(err, WebhookError::InvalidUrl { .. }));
+    }
+
+    #[test]
+    fn debug_output_redacts_token() {
+        let client =
+            WebhookClient::new("https://discord.com/api/webhooks/123456789/SECRET_TOKEN")
+                .unwrap();
+        let debug = format!("{client:?}");
+        assert!(!debug.contains("SECRET_TOKEN"), "token must not appear in debug output");
+        assert!(debug.contains("123456789"), "webhook id should be visible");
+    }
+}

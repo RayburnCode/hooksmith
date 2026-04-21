@@ -5,7 +5,21 @@ edition = "2024"
 description = "Shared HTTP client and WebhookSender trait for the hooksmith crates"
 license = "MIT"
 repository = "https://github.com/RayburnCode/hooksmith"
+readme = "README.md"
+keywords = ["webhook", "http", "async", "notification", "client"]
+categories = ["web-programming", "web-programming::http-client", "network-programming"]
 
 [dependencies]
-reqwest = { workspace = true }
-serde   = { workspace = true }
+reqwest    = { workspace = true }
+serde      = { workspace = true }
+serde_json = { workspace = true }
+thiserror  = { workspace = true }
+futures    = { workspace = true }
+rand       = { workspace = true }
+tokio      = { workspace = true }
+tracing    = { workspace = true, optional = true }
+
+[features]
+default = []
+mock    = []
+tracing = ["dep:tracing"]

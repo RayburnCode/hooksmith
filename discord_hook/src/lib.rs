@@ -7,7 +7,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), discord_hook::WebhookError> {
-//!     let client = WebhookClient::new("https://discord.com/api/webhooks/ID/TOKEN");
+//!     let client = WebhookClient::new("https://discord.com/api/webhooks/ID/TOKEN")?;
 //!
 //!     let message = WebhookMessage::builder()
 //!         .content("Hello from discord_hook!")
@@ -34,6 +34,7 @@
 
 pub mod client;
 pub mod error;
+pub mod macros;
 pub mod message;
 
 pub use client::WebhookClient;

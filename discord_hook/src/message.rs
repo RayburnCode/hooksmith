@@ -466,3 +466,154 @@ impl WebhookMessageBuilder {
         Ok(self.inner)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // --- WebhookMessageBuilder ---
+
+    #[test]
+    fn empty_builder_is_rejected() {
+        let err = WebhookMessage::builder().build().unwrap_err();
+        assert!(matches!(err, WebhookError::EmptyMessage));
+    }
+
+    #[test]
+    fn content_only_message_builds() {
+        let msg = WebhookMessage::builder().content("Hello!").build().unwrap();
+        assert_eq!(msg.content.as_deref(), Some("Hello!"));
+        assert!(msg.embeds.is_empty());
+    }
+
+    #[test]
+    fn embed_only_message_builds() {
+        let embed = Embed::builder().title("Title").build();
+        let msg = WebhookMessage::builder().embed(embed).build().unwrap();
+        assert_eq!(msg.embeds.len(), 1);
+        assert!(msg.content.is_none());
+    }
+
+    #[test]
+    fn flags_are_ored_together() {
+        let msg = WebhookMessage::builder()
+            .content("test")
+            .flag(flags::SUPPRESS_EMBEDS)
+            .flag(flags::SUPPRESS_NOTIFICATIONS)
+            .build()
+            .unwrap();
+        assert_eq!(
+            msg.flags,
+            Some(flags::SUPPRESS_EMBEDS | flags::SUPPRESS_NOTIFICATIONS)
+        );
+    }
+
+    #[test]
+    fn json_content_appends_to_existing_content() {
+        #[derive(serde::Serialize)]
+        struct Val {
+            x: u32,
+        }
+        let msg = WebhookMessage::builder()
+            .content("Summary:")
+            .json_content(&Val { x: 42 })
+            .unwrap()
+            .build()
+            .unwrap();
+        let content = msg.content.unwrap();
+        assert!(content.starts_with("Summary:\n"), "should be separated by newline");
+        assert!(content.contains("\"x\""));
+    }
+
+    #[test]
+    fn json_content_works_without_prior_content() {
+        #[derive(serde::Serialize)]
+        struct Val {
+            ok: bool,
+        }
+        let msg = WebhookMessage::builder()
+            .json_content(&Val { ok: true })
+            .unwrap()
+            .build()
+            .unwrap();
+        let content = msg.content.unwrap();
+        assert!(content.starts_with("```json\n"));
+    }
+
+    // --- EmbedBuilder ---
+
+    #[test]
+    fn embed_builder_stores_fields() {
+        let embed = Embed::builder()
+            .title("Alert")
+            .description("Something happened")
+            .color(0xFF0000)
+            .field("Key", "Value", true)
+            .build();
+
+        assert_eq!(embed.title.as_deref(), Some("Alert"));
+        assert_eq!(embed.description.as_deref(), Some("Something happened"));
+        assert_eq!(embed.color, Some(0xFF0000));
+        assert_eq!(embed.fields.len(), 1);
+        assert_eq!(embed.fields[0].inline, Some(true));
+    }
+
+    // --- json_code_block ---
+
+    #[test]
+    fn json_code_block_format() {
+        #[derive(serde::Serialize)]
+        struct Payload {
+            ok: bool,
+        }
+        let block = json_code_block(&Payload { ok: true }).unwrap();
+        assert!(block.starts_with("```json\n"), "must open with json fence");
+        assert!(block.ends_with("\n```"), "must close with fence");
+        assert!(block.contains("\"ok\": true"));
+    }
+
+    // --- AllowedMentions serialization ---
+
+    #[test]
+    fn allowed_mentions_none_serializes_empty_parse() {
+        let json = serde_json::to_string(&AllowedMentions::none()).unwrap();
+        assert!(json.contains("\"parse\":[]"));
+    }
+
+    #[test]
+    fn allowed_mentions_users_contains_ids() {
+        let am = AllowedMentions::users(["123", "456"]);
+        let json = serde_json::to_string(&am).unwrap();
+        assert!(json.contains("\"123\""));
+        assert!(json.contains("\"456\""));
+    }
+
+    // --- Macros ---
+
+    #[test]
+    fn discord_message_macro_content_only() {
+        let msg = crate::discord_message!(content = "Hi").unwrap();
+        assert_eq!(msg.content.as_deref(), Some("Hi"));
+    }
+
+    #[test]
+    fn discord_message_macro_multiple_fields() {
+        let msg = crate::discord_message!(
+            content  = "Hello",
+            username = "Bot",
+        )
+        .unwrap();
+        assert_eq!(msg.content.as_deref(), Some("Hello"));
+        assert_eq!(msg.username.as_deref(), Some("Bot"));
+    }
+
+    #[test]
+    fn embed_macro_basic() {
+        let embed = crate::embed!(
+            title = "Test",
+            color = 0xFF0000u32,
+        );
+        assert_eq!(embed.title.as_deref(), Some("Test"));
+        assert_eq!(embed.color, Some(0xFF0000));
+    }
+}
