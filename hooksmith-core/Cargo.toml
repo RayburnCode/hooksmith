@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 description = "Shared HTTP client and WebhookSender trait for the hooksmith crates"
 license = "MIT"
-repository = "https://github.com/DylanRayburn/hooksmith"
+repository = "https://github.com/RayburnCode/hooksmith"
 
 [dependencies]
 reqwest = { workspace = true }

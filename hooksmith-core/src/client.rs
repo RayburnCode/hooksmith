@@ -16,8 +16,17 @@ pub struct HttpClient {
 
 impl HttpClient {
     /// Create a client backed by a freshly-constructed [`reqwest::Client`].
+    ///
+    /// A 30-second request timeout is applied by default so that a slow or
+    /// unresponsive endpoint can never hang your application indefinitely.
+    /// Override this by building your own [`reqwest::Client`] and passing it
+    /// to [`HttpClient::with_reqwest`].
     pub fn new() -> Self {
-        Self { inner: Client::new() }
+        let inner = Client::builder()
+            .timeout(std::time::Duration::from_secs(30))
+            .build()
+            .expect("failed to initialise reqwest client — TLS backend unavailable");
+        Self { inner }
     }
 
     /// Wrap an existing [`reqwest::Client`].

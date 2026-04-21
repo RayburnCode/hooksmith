@@ -1,4 +1,5 @@
 use reqwest::Client;
+use secrecy::{ExposeSecret, SecretString};
 
 use hooksmith_core::{HttpClient, WebhookSender};
 
@@ -49,7 +50,10 @@ fn validate_url(url: &str) -> Result<(), WebhookError> {
 /// }
 /// ```
 pub struct WebhookClient {
-    url: String,
+    /// The full webhook URL stored as a secret so it is never accidentally
+    /// logged or included in debug output.  Call `.expose_secret()` only at
+    /// the point where the URL is needed for an HTTP request.
+    url: SecretString,
     client: HttpClient,
 }
 
@@ -63,7 +67,7 @@ impl WebhookClient {
     pub fn new(url: impl Into<String>) -> Result<Self, WebhookError> {
         let url = url.into();
         validate_url(&url)?;
-        Ok(Self { url, client: HttpClient::new() })
+        Ok(Self { url: SecretString::from(url), client: HttpClient::new() })
     }
 
     /// Create a client that reuses a pre-configured [`reqwest::Client`].
@@ -78,7 +82,7 @@ impl WebhookClient {
     pub fn with_client(url: impl Into<String>, client: Client) -> Result<Self, WebhookError> {
         let url = url.into();
         validate_url(&url)?;
-        Ok(Self { url, client: HttpClient::with_reqwest(client) })
+        Ok(Self { url: SecretString::from(url), client: HttpClient::with_reqwest(client) })
     }
 
     /// Send a [`WebhookMessage`] to Discord.
@@ -117,7 +121,7 @@ impl WebhookClient {
         // Always use wait=true so Discord confirms the message was saved.
         // Errors that would otherwise be silently dropped (e.g. bad embed
         // structure) are surfaced as ApiError instead.
-        let mut url = format!("{}?wait=true", self.url);
+        let mut url = format!("{}?wait=true", self.url.expose_secret());
         if let Some(tid) = thread_id {
             url.push_str("&thread_id=");
             url.push_str(tid);
@@ -145,6 +149,25 @@ impl WebhookClient {
         }
 
         Ok(())
+    }
+}
+
+impl std::fmt::Debug for WebhookClient {
+    /// Formats `WebhookClient` for debug output **without exposing the token**.
+    ///
+    /// The webhook URL is `https://discord.com/api/webhooks/{id}/{token}`.
+    /// This implementation shows everything up to and including the webhook ID
+    /// but replaces the token segment with `<REDACTED>`, so you can identify
+    /// which webhook is configured without leaking the secret.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let raw = self.url.expose_secret();
+        let redacted = match raw.rfind('/') {
+            Some(idx) => format!("{}/", &raw[..idx]),
+            None => String::new(),
+        };
+        f.debug_struct("WebhookClient")
+            .field("url", &format_args!("{}<REDACTED>", redacted))
+            .finish_non_exhaustive()
     }
 }
 

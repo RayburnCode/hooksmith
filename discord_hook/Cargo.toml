@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 description = "A Rust crate for sending messages to Discord via webhooks"
 license = "MIT"
-repository = "https://github.com/DylanRayburn/hooksmith"
+repository = "https://github.com/RayburnCode/hooksmith"
 readme = "../README.md"
 keywords = ["discord", "webhook", "notification", "bot", "async"]
 categories = ["web-programming", "web-programming::http-client", "network-programming"]
@@ -19,6 +19,7 @@ native-tls = ["reqwest/native-tls"]
 [dependencies]
 hooksmith-core = { path = "../hooksmith-core" }
 reqwest        = { workspace = true }
+secrecy        = { workspace = true }
 serde          = { workspace = true }
 serde_json     = { workspace = true }
 thiserror      = { workspace = true }
