@@ -2,20 +2,6 @@
 
 # hooksmith
 
-# 1. Log in (one-time — opens browser to get your API token)
-
-cargo login
-
-# 2. Dry-run from inside the crate folder
-
-cd discord_hook
-cargo publish --dry-run
-
-# 3. Actually publish
-
-cargo publish
-cargo clippy --workspace --all-features --tests -- -D warnings
-https://docs.discord.com/developers/resources/webhook
 A collection of Rust webhook crates for sending notifications to external services.
 
 | Crate                            | Description                                |
@@ -30,7 +16,7 @@ This guide shows how to wire `discord_hook` into a **Rust + Dioxus** website so 
 
 ### How it works
 
-```
+```sh
 Browser (Dioxus WASM)
   └─ calls  ──►  #[server] fn submit_lead(...)   (runs on your server)
                     └─ builds WebhookMessage
@@ -209,7 +195,7 @@ pub fn LeadForm() -> Element {
 
 When a lead submits the form, your Discord channel receives a message like:
 
-```
+```sh
 Lead Bot  [BOT]
 ┌─────────────────────────────────┐
 │ New Lead                        │

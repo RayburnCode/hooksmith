@@ -29,10 +29,8 @@ pub trait WebhookSender {
         message: &Self::Message,
     ) -> impl Future<Output = Result<(), Self::Error>> + Send;
 
-    /// Send multiple messages concurrently, fanning them out with
-    /// [`futures::future::join_all`].
-    ///
-    /// Returns one `Result` per message in the same order as the input slice.
+    /// Send multiple messages sequentially, collecting one `Result` per message
+    /// in the same order as the input slice.
     /// A failure for one message does **not** abort the others.
     ///
     /// # Example
@@ -51,7 +49,15 @@ pub trait WebhookSender {
         Self: Sync,
         Self::Error: Send,
     {
+        // Build the futures outside the async block so the slice iterator is
+        // not captured (which would require Self::Message: Sync).
         let futs: Vec<_> = messages.iter().copied().map(|m| self.send(m)).collect();
-        async move { futures::future::join_all(futs).await }
+        async move {
+            let mut results = Vec::with_capacity(futs.len());
+            for fut in futs {
+                results.push(fut.await);
+            }
+            results
+        }
     }
 }

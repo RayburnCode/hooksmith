@@ -112,7 +112,13 @@ impl HttpClient {
                         let factor = 1u32 << attempt; // 2^attempt
                         let base = policy.base_delay * factor;
                         let delay = if policy.jitter {
-                            let jitter: f64 = rand::random();
+                            // Use subsecond nanos from the system clock as a
+                            // cheap jitter source — no external crate needed.
+                            let nanos = std::time::SystemTime::now()
+                                .duration_since(std::time::UNIX_EPOCH)
+                                .unwrap_or_default()
+                                .subsec_nanos();
+                            let jitter = (nanos % 1_000) as f64 / 1_000.0;
                             base + Duration::from_secs_f64(base.as_secs_f64() * jitter)
                         } else {
                             base

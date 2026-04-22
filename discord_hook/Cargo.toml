@@ -1,14 +1,16 @@
 [package]
-name = "discord_hook"
-version = "0.1.0"
-edition = "2024"
-description = "A Rust crate for sending messages to Discord via webhooks"
-license = "MIT"
-repository = "https://github.com/RayburnCode/hooksmith"
-readme = "README.md"
-keywords = ["discord", "webhook", "notification", "bot", "async"]
-categories = ["web-programming", "web-programming::http-client", "network-programming"]
-exclude = ["target/"]
+name          = "discord_hook"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+repository.workspace = true
+homepage.workspace   = true
+readme.workspace     = true
+categories.workspace = true
+description   = "A Rust crate for sending messages to Discord via webhooks"
+documentation = "https://docs.rs/discord_hook"
+keywords      = ["discord", "webhook", "notification", "bot", "async"]
+exclude       = ["target/"]
 
 [features]
 # TLS backend — choose one. rustls is the default (pure Rust, no OpenSSL dep).

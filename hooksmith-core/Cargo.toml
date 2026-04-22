@@ -1,21 +1,21 @@
 [package]
-name = "hooksmith-core"
-version = "0.1.1"
-edition = "2024"
-description = "Shared HTTP client and WebhookSender trait for the hooksmith crates"
-license = "MIT"
-repository = "https://github.com/RayburnCode/hooksmith"
-readme = "README.md"
-keywords = ["webhook", "http", "async", "notification", "client"]
-categories = ["web-programming", "web-programming::http-client", "network-programming"]
+name          = "hooksmith-core"
+version.workspace    = true
+edition.workspace    = true
+license.workspace    = true
+repository.workspace = true
+homepage.workspace   = true
+readme.workspace     = true
+categories.workspace = true
+description   = "Shared HTTP client and WebhookSender trait for the hooksmith crates"
+documentation = "https://docs.rs/hooksmith-core"
+keywords      = ["webhook", "http", "async", "notification", "client"]
 
 [dependencies]
 reqwest    = { workspace = true }
 serde      = { workspace = true }
 serde_json = { workspace = true }
 thiserror  = { workspace = true }
-futures    = { workspace = true }
-rand       = { workspace = true }
 tokio      = { workspace = true }
 tracing    = { workspace = true, optional = true }
 
@@ -23,3 +23,5 @@ tracing    = { workspace = true, optional = true }
 default = []
 mock    = []
 tracing = ["dep:tracing"]
+
+
