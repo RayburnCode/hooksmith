@@ -69,7 +69,7 @@ warn "  • Publish discord_hook v${NEW_VERSION}"
 warn "  • Push a git tag v${NEW_VERSION}"
 echo ""
 read -rp "$(echo -e "${YELLOW}Continue? [y/N]${NC} ")" CONFIRM
-[[ "${CONFIRM,,}" == "y" ]] || { info "Aborted."; exit 0; }
+[[ "$(echo "$CONFIRM" | tr '[:upper:]' '[:lower:]')" == "y" ]] || { info "Aborted."; exit 0; }
 
 # ── Bump version in Cargo.toml ────────────────────────────────────────────────
 sed -i.bak "s/^version[[:space:]]*=[[:space:]]*\"${CURRENT_VERSION}\"/version    = \"${NEW_VERSION}\"/" "$CARGO_TOML"
