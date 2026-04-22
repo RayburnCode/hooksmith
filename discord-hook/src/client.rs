@@ -80,7 +80,10 @@ impl WebhookClient {
     pub fn new(url: impl Into<String>) -> Result<Self, WebhookError> {
         let url = url.into();
         validate_url(&url)?;
-        Ok(Self { url: SecretString::from(url), client: HttpClient::new() })
+        Ok(Self {
+            url: SecretString::from(url),
+            client: HttpClient::new(),
+        })
     }
 
     /// Create a client that reuses a pre-configured [`reqwest::Client`].
@@ -95,7 +98,10 @@ impl WebhookClient {
     pub fn with_client(url: impl Into<String>, client: Client) -> Result<Self, WebhookError> {
         let url = url.into();
         validate_url(&url)?;
-        Ok(Self { url: SecretString::from(url), client: HttpClient::with_reqwest(client) })
+        Ok(Self {
+            url: SecretString::from(url),
+            client: HttpClient::with_reqwest(client),
+        })
     }
 
     /// Send a [`WebhookMessage`] to Discord.
@@ -157,7 +163,10 @@ impl WebhookClient {
         policy: &RetryPolicy,
     ) -> Result<(), WebhookError> {
         let url = format!("{}?wait=true", self.url.expose_secret());
-        let response = self.client.post_json_with_retry(&url, message, policy).await?;
+        let response = self
+            .client
+            .post_json_with_retry(&url, message, policy)
+            .await?;
         let status = response.status();
 
         if status == reqwest::StatusCode::TOO_MANY_REQUESTS {
@@ -172,7 +181,9 @@ impl WebhookClient {
         }
 
         if !status.is_success() {
-            let body = response.bytes().await
+            let body = response
+                .bytes()
+                .await
                 .map(|b| {
                     // Cap at 4 KiB — enough to describe any API error without
                     // allowing a misbehaving endpoint to exhaust memory.
@@ -180,7 +191,10 @@ impl WebhookClient {
                     String::from_utf8_lossy(slice).into_owned()
                 })
                 .unwrap_or_else(|_| status.to_string());
-            return Err(WebhookError::ApiError { status: status.as_u16(), message: body });
+            return Err(WebhookError::ApiError {
+                status: status.as_u16(),
+                message: body,
+            });
         }
 
         Ok(())
@@ -217,13 +231,18 @@ impl WebhookClient {
         }
 
         if !status.is_success() {
-            let body = response.bytes().await
+            let body = response
+                .bytes()
+                .await
                 .map(|b| {
                     let slice = &b[..b.len().min(4096)];
                     String::from_utf8_lossy(slice).into_owned()
                 })
                 .unwrap_or_else(|_| status.to_string());
-            return Err(WebhookError::ApiError { status: status.as_u16(), message: body });
+            return Err(WebhookError::ApiError {
+                status: status.as_u16(),
+                message: body,
+            });
         }
 
         Ok(())
@@ -374,16 +393,21 @@ mod tests {
     #[test]
     fn debug_output_redacts_token() {
         let client =
-            WebhookClient::new("https://discord.com/api/webhooks/123456789/SECRET_TOKEN")
-                .unwrap();
+            WebhookClient::new("https://discord.com/api/webhooks/123456789/SECRET_TOKEN").unwrap();
         let debug = format!("{client:?}");
-        assert!(!debug.contains("SECRET_TOKEN"), "token must not appear in debug output");
+        assert!(
+            !debug.contains("SECRET_TOKEN"),
+            "token must not appear in debug output"
+        );
         assert!(debug.contains("123456789"), "webhook id should be visible");
     }
 
     #[test]
     fn thread_id_rejects_empty() {
-        assert!(matches!(validate_thread_id(""), Err(WebhookError::InvalidThreadId)));
+        assert!(matches!(
+            validate_thread_id(""),
+            Err(WebhookError::InvalidThreadId)
+        ));
     }
 
     #[test]
@@ -405,11 +429,10 @@ mod tests {
     #[test]
     fn builder_accepts_valid_url() {
         use std::time::Duration;
-        let result =
-            WebhookClientBuilder::new("https://discord.com/api/webhooks/123456789/abcdef")
-                .connect_timeout(Duration::from_secs(5))
-                .request_timeout(Duration::from_secs(15))
-                .build();
+        let result = WebhookClientBuilder::new("https://discord.com/api/webhooks/123456789/abcdef")
+            .connect_timeout(Duration::from_secs(5))
+            .request_timeout(Duration::from_secs(15))
+            .build();
         assert!(result.is_ok());
     }
 

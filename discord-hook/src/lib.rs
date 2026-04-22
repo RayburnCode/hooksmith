@@ -41,6 +41,6 @@ pub use client::{WebhookClient, WebhookClientBuilder};
 pub use error::WebhookError;
 pub use hooksmith_core::WebhookSender;
 pub use message::{
-    flags, json_code_block, AllowedMentionType, AllowedMentions, Embed, EmbedAuthor, EmbedBuilder,
-    EmbedField, EmbedFooter, EmbedImage, EmbedThumbnail, WebhookMessage, WebhookMessageBuilder,
+    AllowedMentionType, AllowedMentions, Embed, EmbedAuthor, EmbedBuilder, EmbedField, EmbedFooter,
+    EmbedImage, EmbedThumbnail, WebhookMessage, WebhookMessageBuilder, flags, json_code_block,
 };

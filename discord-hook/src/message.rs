@@ -47,12 +47,20 @@ pub struct AllowedMentions {
 impl AllowedMentions {
     /// Allow no mentions at all — safe default for user-generated content.
     pub fn none() -> Self {
-        Self { parse: vec![], roles: vec![], users: vec![] }
+        Self {
+            parse: vec![],
+            roles: vec![],
+            users: vec![],
+        }
     }
 
     /// Allow mentions for specific user IDs only.
     pub fn users(ids: impl IntoIterator<Item = impl Into<String>>) -> Self {
-        Self { parse: vec![], roles: vec![], users: ids.into_iter().map(Into::into).collect() }
+        Self {
+            parse: vec![],
+            roles: vec![],
+            users: ids.into_iter().map(Into::into).collect(),
+        }
     }
 
     /// Allow `@everyone` / `@here`, role mentions, and user mentions.
@@ -209,11 +217,18 @@ impl EmbedBuilder {
     }
 
     pub fn footer(mut self, text: impl Into<String>) -> Self {
-        self.inner.footer = Some(EmbedFooter { text: text.into(), icon_url: None });
+        self.inner.footer = Some(EmbedFooter {
+            text: text.into(),
+            icon_url: None,
+        });
         self
     }
 
-    pub fn footer_with_icon(mut self, text: impl Into<String>, icon_url: impl Into<String>) -> Self {
+    pub fn footer_with_icon(
+        mut self,
+        text: impl Into<String>,
+        icon_url: impl Into<String>,
+    ) -> Self {
         self.inner.footer = Some(EmbedFooter {
             text: text.into(),
             icon_url: Some(icon_url.into()),
@@ -232,7 +247,11 @@ impl EmbedBuilder {
     }
 
     pub fn author(mut self, name: impl Into<String>) -> Self {
-        self.inner.author = Some(EmbedAuthor { name: name.into(), url: None, icon_url: None });
+        self.inner.author = Some(EmbedAuthor {
+            name: name.into(),
+            url: None,
+            icon_url: None,
+        });
         self
     }
 
@@ -251,7 +270,12 @@ impl EmbedBuilder {
     }
 
     /// Add a field.  Pass `inline: true` to render side-by-side with adjacent fields.
-    pub fn field(mut self, name: impl Into<String>, value: impl Into<String>, inline: bool) -> Self {
+    pub fn field(
+        mut self,
+        name: impl Into<String>,
+        value: impl Into<String>,
+        inline: bool,
+    ) -> Self {
         self.inner.fields.push(EmbedField {
             name: name.into(),
             value: value.into(),
@@ -521,7 +545,10 @@ mod tests {
             .build()
             .unwrap();
         let content = msg.content.unwrap();
-        assert!(content.starts_with("Summary:\n"), "should be separated by newline");
+        assert!(
+            content.starts_with("Summary:\n"),
+            "should be separated by newline"
+        );
         assert!(content.contains("\"x\""));
     }
 
@@ -598,21 +625,14 @@ mod tests {
 
     #[test]
     fn discord_message_macro_multiple_fields() {
-        let msg = crate::discord_message!(
-            content  = "Hello",
-            username = "Bot",
-        )
-        .unwrap();
+        let msg = crate::discord_message!(content = "Hello", username = "Bot",).unwrap();
         assert_eq!(msg.content.as_deref(), Some("Hello"));
         assert_eq!(msg.username.as_deref(), Some("Bot"));
     }
 
     #[test]
     fn embed_macro_basic() {
-        let embed = crate::embed!(
-            title = "Test",
-            color = 0xFF0000u32,
-        );
+        let embed = crate::embed!(title = "Test", color = 0xFF0000u32,);
         assert_eq!(embed.title.as_deref(), Some("Test"));
         assert_eq!(embed.color, Some(0xFF0000));
     }

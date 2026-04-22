@@ -24,10 +24,8 @@ pub trait WebhookSender {
     type Error: std::error::Error;
 
     /// Send a single message to the configured webhook endpoint.
-    fn send(
-        &self,
-        message: &Self::Message,
-    ) -> impl Future<Output = Result<(), Self::Error>> + Send;
+    fn send(&self, message: &Self::Message)
+    -> impl Future<Output = Result<(), Self::Error>> + Send;
 
     /// Send multiple messages sequentially, collecting one `Result` per message
     /// in the same order as the input slice.

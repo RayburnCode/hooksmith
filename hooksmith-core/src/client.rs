@@ -231,6 +231,8 @@ impl HttpClientBuilder {
         if let Some(t) = self.connect_timeout {
             builder = builder.connect_timeout(t);
         }
-        Ok(HttpClient { inner: builder.build()? })
+        Ok(HttpClient {
+            inner: builder.build()?,
+        })
     }
 }

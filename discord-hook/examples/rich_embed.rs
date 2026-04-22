@@ -9,8 +9,8 @@ use discord_hook::{AllowedMentions, Embed, WebhookClient, WebhookMessage};
 
 #[tokio::main]
 async fn main() -> Result<(), discord_hook::WebhookError> {
-    let url = std::env::var("DISCORD_WEBHOOK_URL")
-        .expect("Set DISCORD_WEBHOOK_URL to your webhook URL");
+    let url =
+        std::env::var("DISCORD_WEBHOOK_URL").expect("Set DISCORD_WEBHOOK_URL to your webhook URL");
 
     let client = WebhookClient::new(&url)?;
 
