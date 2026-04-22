@@ -1,5 +1,5 @@
 [package]
-name          = "discord-hook"
+name          = "discord_hook"
 version.workspace    = true
 edition.workspace    = true
 license.workspace    = true
@@ -8,7 +8,7 @@ homepage.workspace   = true
 readme.workspace     = true
 categories.workspace = true
 description   = "A Rust crate for sending messages to Discord via webhooks"
-documentation = "https://docs.rs/discord-hook"
+documentation = "https://docs.rs/discord_hook"
 keywords      = ["discord", "webhook", "notification", "bot", "async"]
 exclude       = ["target/"]
 
