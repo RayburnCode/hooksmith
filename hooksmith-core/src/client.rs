@@ -12,6 +12,7 @@ use std::time::Duration;
 /// **TLS configuration** is the responsibility of the service crate — build a
 /// [`reqwest::Client`] with your chosen TLS backend and pass it in via
 /// [`HttpClient::with_reqwest`].
+#[derive(Clone)]
 pub struct HttpClient {
     inner: Client,
 }
@@ -142,5 +143,94 @@ impl HttpClient {
 impl Default for HttpClient {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Domain validation utility
+// ---------------------------------------------------------------------------
+
+/// Return `true` if `url` uses HTTPS and its host exactly matches one of the
+/// `allowed` domains.
+///
+/// This is a convenience helper for service-crate constructors that want to
+/// enforce a fixed set of known-good endpoints. Matching is against the bare
+/// hostname only — port and path are excluded from the comparison.
+///
+/// # Example
+///
+/// ```rust
+/// use hooksmith_core::is_allowed_domain;
+///
+/// assert!(is_allowed_domain("https://hooks.slack.com/services/T/B/X", &["hooks.slack.com"]));
+/// assert!(!is_allowed_domain("https://evil.com/hooks.slack.com", &["hooks.slack.com"]));
+/// assert!(!is_allowed_domain("http://hooks.slack.com/services/T/B/X", &["hooks.slack.com"]));
+/// ```
+pub fn is_allowed_domain(url: &str, allowed: &[&str]) -> bool {
+    let Some(rest) = url.strip_prefix("https://") else {
+        return false;
+    };
+    // host[:port]/path — take only the host[:port] segment, then strip port.
+    let host_port = rest.split('/').next().unwrap_or("");
+    let host = host_port.split(':').next().unwrap_or("");
+    allowed.contains(&host)
+}
+
+// ---------------------------------------------------------------------------
+// HttpClientBuilder
+// ---------------------------------------------------------------------------
+
+/// Builder for [`HttpClient`] with configurable timeout settings.
+///
+/// # Example
+///
+/// ```rust
+/// use hooksmith_core::HttpClientBuilder;
+/// use std::time::Duration;
+///
+/// let client = HttpClientBuilder::new()
+///     .connect_timeout(Duration::from_secs(5))
+///     .request_timeout(Duration::from_secs(15))
+///     .build()
+///     .expect("failed to build client");
+/// ```
+#[derive(Default)]
+pub struct HttpClientBuilder {
+    connect_timeout: Option<Duration>,
+    request_timeout: Option<Duration>,
+}
+
+impl HttpClientBuilder {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Set the maximum time allowed to establish a TCP connection.
+    pub fn connect_timeout(mut self, timeout: Duration) -> Self {
+        self.connect_timeout = Some(timeout);
+        self
+    }
+
+    /// Set the maximum time allowed for a complete request/response cycle.
+    ///
+    /// Defaults to 30 seconds when not set.
+    pub fn request_timeout(mut self, timeout: Duration) -> Self {
+        self.request_timeout = Some(timeout);
+        self
+    }
+
+    /// Build the [`HttpClient`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the underlying [`reqwest::Client`] cannot be
+    /// constructed (e.g. TLS backend unavailable).
+    pub fn build(self) -> Result<HttpClient, reqwest::Error> {
+        let mut builder =
+            Client::builder().timeout(self.request_timeout.unwrap_or(Duration::from_secs(30)));
+        if let Some(t) = self.connect_timeout {
+            builder = builder.connect_timeout(t);
+        }
+        Ok(HttpClient { inner: builder.build()? })
     }
 }

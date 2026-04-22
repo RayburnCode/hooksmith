@@ -1,5 +1,5 @@
 [workspace]
-members = ["hooksmith-core", "discord_hook"]
+members = ["hooksmith-core", "discord-hook"]
 resolver = "2"
 
 [workspace.package]

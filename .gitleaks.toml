@@ -1,0 +1,41 @@
+title = "hooksmith — gitleaks secrets configuration"
+
+# ---------------------------------------------------------------------------
+# Rules — patterns that indicate a committed secret
+# ---------------------------------------------------------------------------
+
+[[rules]]
+id          = "discord-webhook-token"
+description = "Discord webhook URL containing a live token"
+# Format: https://discord.com/api/webhooks/{id}/{token}
+# Token segment is Base64url, typically 68 chars
+regex       = '''discord\.com/api/webhooks/[0-9]{17,20}/[A-Za-z0-9_\-]{60,80}'''
+tags        = ["discord", "webhook", "secret"]
+
+[[rules]]
+id          = "slack-webhook-url"
+description = "Slack incoming webhook URL"
+# Format: https://hooks.slack.com/services/T.../B.../...
+regex       = '''hooks\.slack\.com/services/[A-Z0-9]+/[A-Z0-9]+/[A-Za-z0-9]+'''
+tags        = ["slack", "webhook", "secret"]
+
+[[rules]]
+id          = "teams-webhook-url"
+description = "Microsoft Teams incoming webhook URL"
+regex       = '''outlook\.office\.com/webhook[b2]*/[0-9a-f\-]+'''
+tags        = ["teams", "webhook", "secret"]
+
+# ---------------------------------------------------------------------------
+# Allowlist — placeholder values used in docs, tests, and examples
+# ---------------------------------------------------------------------------
+
+[allowlist]
+description = "Documentation placeholders and test fixtures"
+regexes = [
+    # Docs / README placeholders
+    '''discord\.com/api/webhooks/ID/TOKEN''',
+    # Unit test fixtures
+    '''discord\.com/api/webhooks/123456789/SECRET_TOKEN''',
+    '''discord\.com/api/webhooks/123456789/abcdef''',
+    '''discord\.com/api/webhooks/123/abc''',
+]

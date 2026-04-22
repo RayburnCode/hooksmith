@@ -6,13 +6,13 @@ A collection of Rust webhook crates for sending notifications to external servic
 
 | Crate                            | Description                                |
 | -------------------------------- | ------------------------------------------ |
-| [`discord_hook`](./discord_hook) | Send rich messages to Discord via webhooks |
+| [`discord-hook`](./discord-hook) | Send rich messages to Discord via webhooks |
 
 ---
 
-## `discord_hook` — Dioxus Lead Form Integration Guide
+## `discord-hook` — Dioxus Lead Form Integration Guide
 
-This guide shows how to wire `discord_hook` into a **Rust + Dioxus** website so that every lead-form submission fires a Discord notification.
+This guide shows how to wire `discord-hook` into a **Rust + Dioxus** website so that every lead-form submission fires a Discord notification.
 
 ### How it works
 
@@ -34,7 +34,7 @@ In your website's `Cargo.toml`:
 
 ```toml
 [dependencies]
-discord_hook = { path = "../hooksmith/discord_hook" }   # or a crates.io version once published
+discord-hook = { path = "../hooksmith/discord-hook" }   # or a crates.io version once published
 dioxus = { version = "0.6", features = ["fullstack"] }
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
@@ -218,6 +218,6 @@ Lead Bot  [BOT]
 | -------------------------- | ---------------------------------------------------------------------------------- |
 | Webhook URL (secret token) | Stored in env var, only read server-side inside `#[server]` fn                     |
 | HTTPS enforcement          | `WebhookClient::new` rejects any non-HTTPS or non-Discord URL at construction time |
-| TLS                        | `discord_hook` defaults to `rustls` (pure-Rust TLS, no OpenSSL dependency)         |
+| TLS                        | `discord-hook` defaults to `rustls` (pure-Rust TLS, no OpenSSL dependency)         |
 | User input                 | Passed as typed Rust struct — no raw string concatenation into the payload         |
 | `.env` file                | Add to `.gitignore`; use your host's secret management in production               |

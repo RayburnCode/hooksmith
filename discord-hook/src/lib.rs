@@ -37,7 +37,7 @@ pub mod error;
 pub mod macros;
 pub mod message;
 
-pub use client::WebhookClient;
+pub use client::{WebhookClient, WebhookClientBuilder};
 pub use error::WebhookError;
 pub use hooksmith_core::WebhookSender;
 pub use message::{

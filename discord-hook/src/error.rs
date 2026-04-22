@@ -28,4 +28,11 @@ pub enum WebhookError {
     /// URLs must use HTTPS and target `discord.com/api/webhooks/`.
     #[error("Invalid webhook URL: {reason}")]
     InvalidUrl { reason: &'static str },
+
+    /// The thread ID is not a valid Discord snowflake.
+    ///
+    /// Thread IDs must be non-empty strings of ASCII digits.  Non-numeric
+    /// characters are rejected to prevent URL manipulation attacks.
+    #[error("Invalid thread ID: must be a non-empty numeric Discord snowflake")]
+    InvalidThreadId,
 }

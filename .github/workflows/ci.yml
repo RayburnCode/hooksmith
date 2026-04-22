@@ -1,0 +1,51 @@
+name: CI
+
+on:
+    push:
+        branches: [ main ]
+    pull_request:
+        branches: [ main ]
+
+env:
+    CARGO_TERM_COLOR: always
+
+jobs:
+    ci:
+        name: Test, Clippy, Fmt
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: dtolnay/rust-toolchain@stable
+              with:
+                  components: rustfmt, clippy
+
+            - uses: Swatinem/rust-cache@v2
+
+            - name: cargo fmt --check
+              run: cargo fmt --all -- --check
+
+            - name: cargo clippy
+              run: cargo clippy --all-targets --all-features -- -D warnings
+
+            - name: cargo test
+              run: cargo test --all-features
+              # Integration tests are skipped automatically when DISCORD_WEBHOOK_URL
+              # is not set — no secrets needed for the standard CI run.
+
+            - name: cargo semver-checks
+              # Compares the local crate against the published version on crates.io
+              # and fails if any breaking change is detected without a major version bump.
+              # Skip this step before the crates are first published (no baseline yet).
+              run: |
+                  cargo install cargo-semver-checks --locked --quiet
+                  cargo semver-checks --workspace
+              continue-on-error: true # Remove this line after first publish to crates.io
+
+            - name: cargo audit
+              # Scan all dependencies for known CVEs listed in the RustSec advisory DB.
+              # Fails CI if any unfixed vulnerability is found.
+              run: |
+                  cargo install cargo-audit --locked --quiet
+                  cargo audit

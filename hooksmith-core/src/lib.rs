@@ -6,7 +6,7 @@ pub mod sender;
 #[cfg(feature = "mock")]
 pub mod mock;
 
-pub use client::HttpClient;
+pub use client::{is_allowed_domain, HttpClient, HttpClientBuilder};
 pub use error::CoreError;
 pub use retry::RetryPolicy;
 pub use sender::WebhookSender;
