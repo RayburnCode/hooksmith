@@ -12,7 +12,7 @@
 #   3. Updates CHANGELOG.md (promotes [Unreleased] → [x.y.z] - YYYY-MM-DD)
 #   4. Runs `cargo test --workspace` — aborts on failure
 #   5. Commits the version bump
-#   6. Publishes hooksmith-core first, then polls crates.io until it's indexed
+#   6. Publishes discord-hook-core first, then polls crates.io until it's indexed
 #   7. Publishes discord_hook
 #   8. Creates a git tag vX.Y.Z and pushes commits + tag
 
@@ -64,7 +64,7 @@ warn "This will:"
 warn "  • Bump workspace version to ${NEW_VERSION}"
 warn "  • Update CHANGELOG.md"
 warn "  • Run cargo test --workspace"
-warn "  • Publish hooksmith-core v${NEW_VERSION}"
+warn "  • Publish discord-hook-core v${NEW_VERSION}"
 warn "  • Publish discord_hook v${NEW_VERSION}"
 warn "  • Push a git tag v${NEW_VERSION}"
 echo ""
@@ -110,13 +110,13 @@ git -C "$ROOT" add Cargo.toml Cargo.lock CHANGELOG.md
 git -C "$ROOT" commit -m "chore: release v${NEW_VERSION}"
 success "Committed version bump."
 
-# ── Publish hooksmith-core ────────────────────────────────────────────────────
-info "Publishing hooksmith-core v${NEW_VERSION} …"
-cargo publish -p hooksmith-core
-success "hooksmith-core published."
+# ── Publish discord-hook-core ────────────────────────────────────────────────────
+info "Publishing discord-hook-core v${NEW_VERSION} …"
+cargo publish -p discord-hook-core
+success "discord-hook-core published."
 
-# ── Wait for crates.io to index hooksmith-core ────────────────────────────────
-info "Waiting for crates.io to index hooksmith-core v${NEW_VERSION} …"
+# ── Wait for crates.io to index discord-hook-core ────────────────────────────────
+info "Waiting for crates.io to index discord-hook-core v${NEW_VERSION} …"
 info "(This typically takes 30–90 seconds)"
 
 MAX_WAIT=180   # seconds total
@@ -128,13 +128,13 @@ while (( elapsed < MAX_WAIT )); do
     elapsed=$(( elapsed + POLL_INTERVAL ))
 
     # cargo search returns the latest published version
-    INDEXED=$(cargo search hooksmith-core --limit 1 2>/dev/null \
-        | grep '^hooksmith-core' \
+    INDEXED=$(cargo search discord-hook-core --limit 1 2>/dev/null \
+        | grep '^discord-hook-core' \
         | grep -o '"[0-9]*\.[0-9]*\.[0-9]*"' \
         | tr -d '"' || true)
 
     if [[ "$INDEXED" == "$NEW_VERSION" ]]; then
-        success "hooksmith-core v${NEW_VERSION} is now indexed on crates.io."
+        success "discord-hook-core v${NEW_VERSION} is now indexed on crates.io."
         break
     fi
 
@@ -142,7 +142,7 @@ while (( elapsed < MAX_WAIT )); do
 done
 
 if [[ "$INDEXED" != "$NEW_VERSION" ]]; then
-    die "hooksmith-core v${NEW_VERSION} was not indexed within ${MAX_WAIT}s.\n  Check https://crates.io/crates/hooksmith-core and re-run the publish steps manually."
+    die "discord-hook-core v${NEW_VERSION} was not indexed within ${MAX_WAIT}s.\n  Check https://crates.io/crates/discord-hook-core and re-run the publish steps manually."
 fi
 
 # ── Publish discord_hook ──────────────────────────────────────────────────────
@@ -159,5 +159,5 @@ success "Pushed commit and tag ${TAG}."
 
 echo ""
 success "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-success "  Released hooksmith-core + discord_hook v${NEW_VERSION}"
+success "  Released discord-hook-core + discord_hook v${NEW_VERSION}"
 success "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
