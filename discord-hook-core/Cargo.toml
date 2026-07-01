@@ -7,8 +7,8 @@ repository.workspace = true
 homepage.workspace   = true
 readme.workspace     = true
 categories.workspace = true
-description   = "Shared HTTP client and WebhookSender trait for the hooksmith crates"
-documentation = "https://docs.rs/hooksmith-core"
+description   = "Shared HTTP client and WebhookSender trait for the discord-hook crates"
+documentation = "https://docs.rs/discord-hook-core"
 keywords      = ["webhook", "http", "async", "notification", "client"]
 
 [dependencies]

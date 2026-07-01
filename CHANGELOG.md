@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.6] - 2026-07-01
+
+---
+
 ## [0.1.5] - 2026-04-22
 
 ## [0.1.2] - 2026-04-22
@@ -26,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Three runnable examples in `examples/`: `basic_message`, `rich_embed`, `send_with_retry`.
 - Integration test suite in `tests/integration.rs` — all tests skip automatically when `DISCORD_WEBHOOK_URL` is not set.
 
-#### `hooksmith-core`
+#### `discord-hook-core`
 
 - `HttpClient` now derives `Clone`.
 
@@ -41,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-#### `hooksmith-core`
+#### `discord-hook-core`
 
 - `RetryPolicy` and `HttpClient::post_json_with_retry` — exponential backoff with optional jitter.
 - `CoreError` — shared transport-level error type wrapping `reqwest::Error` and `serde_json::Error`.
@@ -64,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release of `hooksmith-core` and `discord_hook`.
+- Initial release of `discord-hook-core` and `discord_hook`.
 - `WebhookClient` with URL validation (HTTPS + `discord.com/api/webhooks/` check), `SecretString` storage, and `WebhookSender` trait implementation.
 - `Embed` and `EmbedBuilder` with title, description, URL, color, footer, thumbnail, image, author, fields, and timestamp.
 - `WebhookMessage` and `WebhookMessageBuilder`.

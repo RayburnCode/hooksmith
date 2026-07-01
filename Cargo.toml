@@ -1,9 +1,9 @@
 [workspace]
-members = ["hooksmith-core", "discord-hook"]
+members = ["discord-hook-core", "discord-hook"]
 resolver = "2"
 
 [workspace.package]
-version    = "0.1.5"
+version    = "0.1.6"
 edition    = "2024"
 license    = "MIT"
 repository = "https://github.com/RayburnCode/hooksmith"
