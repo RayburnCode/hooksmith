@@ -7,7 +7,7 @@ use std::future::Future;
 /// code can then be generic over the notification backend:
 ///
 /// ```rust,ignore
-/// use hooksmith_core::WebhookSender;
+/// use discord_hook_core::WebhookSender;
 ///
 /// async fn notify<S>(sender: &S, msg: &S::Message) -> Result<(), S::Error>
 /// where

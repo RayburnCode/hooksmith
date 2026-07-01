@@ -19,7 +19,7 @@ An async Rust crate for sending rich messages to Discord via webhooks.
 - **`AllowedMentions` control** — always safe to pass user-generated content; silence `@everyone` pings with a single call.
 - **JSON code blocks** — format any `Serialize` value as a Discord code block in message content or embed descriptions/fields.
 - **Pluggable TLS** — `rustls` by default (pure Rust, no OpenSSL); opt into `native-tls` via a feature flag.
-- **`WebhookSender` trait** — write code that is generic over notification backends (Discord, Slack, etc.) via `hooksmith-core`.
+- **`WebhookSender` trait** — write code that is generic over notification backends (Discord, Slack, etc.) via `discord-hook-core`.
 
 ---
 
@@ -171,7 +171,7 @@ WebhookError::RateLimited { retry_after_ms: u64 }
 ```
 
 Back off and retry after that many milliseconds. For automatic retry with
-exponential backoff use `HttpClient::post_json_with_retry` from `hooksmith-core`.
+exponential backoff use `HttpClient::post_json_with_retry` from `discord-hook-core`.
 
 ---
 
@@ -190,7 +190,7 @@ exponential backoff use `HttpClient::post_json_with_retry` from `hooksmith-core`
 
 ## Writing backend-agnostic code
 
-`discord-hook` re-exports `WebhookSender` from `hooksmith-core`. Implement it
+`discord-hook` re-exports `WebhookSender` from `discord-hook-core`. Implement it
 once and swap backends without changing call sites:
 
 ```rust,ignore

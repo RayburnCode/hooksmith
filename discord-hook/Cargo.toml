@@ -19,7 +19,7 @@ rustls = ["reqwest/rustls"]
 native-tls = ["reqwest/native-tls"]
 
 [dependencies]
-hooksmith-core = { path = "../hooksmith-core", version = "0.1" }
+discord-hook-core = { path = "../hooksmith-core", version = "0.1" }
 reqwest        = { workspace = true }
 secrecy        = { workspace = true }
 serde          = { workspace = true }

@@ -6,7 +6,7 @@
 //! ```
 
 use discord_hook::{WebhookClient, WebhookMessage};
-use hooksmith_core::RetryPolicy;
+use discord_hook_core::RetryPolicy;
 use std::time::Duration;
 
 #[tokio::main]

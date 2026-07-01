@@ -1,6 +1,6 @@
 <!-- @format -->
 
-# hooksmith-core
+# discord-hook-core
 
 Shared building blocks for the hooksmith family of webhook crates.
 
@@ -144,7 +144,7 @@ endpoint. Add it to `dev-dependencies` so it is only compiled for tests:
 
 ```toml
 [dev-dependencies]
-hooksmith-core = { version = "*", features = ["mock"] }
+discord-hook-core = { version = "*", features = ["mock"] }
 ```
 
 ```rust
@@ -169,7 +169,7 @@ instrumented with an `info_span` named `hooksmith.post_json`. The span records:
 
 ```toml
 [dependencies]
-hooksmith-core = { version = "*", features = ["tracing"] }
+discord-hook-core = { version = "*", features = ["tracing"] }
 ```
 
 No other code changes are required — wire up your `tracing` subscriber as
@@ -177,13 +177,13 @@ normal and the spans appear automatically.
 
 ---
 
-## Using hooksmith-core in a service crate
+## Using discord-hook-core in a service crate
 
 1. Add it to your `Cargo.toml`:
 
    ```toml
    [dependencies]
-   hooksmith-core = { version = "*" }
+   discord-hook-core = { version = "*" }
    ```
 
 2. Implement `WebhookSender`:

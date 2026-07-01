@@ -2,7 +2,7 @@ use reqwest::Client;
 use secrecy::{ExposeSecret, SecretString};
 use std::time::Duration;
 
-use hooksmith_core::{HttpClient, RetryPolicy, WebhookSender};
+use discord_hook_core::{HttpClient, RetryPolicy, WebhookSender};
 
 use crate::{WebhookError, WebhookMessage};
 
@@ -144,7 +144,7 @@ impl WebhookClient {
     ///
     /// ```rust,no_run
     /// use discord_hook::{WebhookClient, WebhookMessage};
-    /// use hooksmith_core::RetryPolicy;
+    /// use discord_hook_core::RetryPolicy;
     /// use std::time::Duration;
     ///
     /// # #[tokio::main]

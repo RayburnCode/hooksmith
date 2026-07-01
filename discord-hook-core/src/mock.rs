@@ -14,8 +14,8 @@ use std::{future::Future, sync::Mutex};
 /// # Example
 ///
 /// ```rust,ignore
-/// use hooksmith_core::mock::MockSender;
-/// use hooksmith_core::WebhookSender;
+/// use discord_hook_core::mock::MockSender;
+/// use discord_hook_core::WebhookSender;
 ///
 /// let sender: MockSender<MyMessage> = MockSender::new();
 /// sender.send(&my_message).await.unwrap();

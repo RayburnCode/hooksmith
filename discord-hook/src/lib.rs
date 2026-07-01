@@ -39,7 +39,7 @@ pub mod message;
 
 pub use client::{WebhookClient, WebhookClientBuilder};
 pub use error::WebhookError;
-pub use hooksmith_core::WebhookSender;
+pub use discord_hook_core::WebhookSender;
 pub use message::{
     AllowedMentionType, AllowedMentions, Embed, EmbedAuthor, EmbedBuilder, EmbedField, EmbedFooter,
     EmbedImage, EmbedThumbnail, WebhookMessage, WebhookMessageBuilder, flags, json_code_block,

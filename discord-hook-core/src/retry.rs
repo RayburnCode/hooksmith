@@ -12,7 +12,7 @@ use std::time::Duration;
 ///
 /// ```rust,ignore
 /// use std::time::Duration;
-/// use hooksmith_core::RetryPolicy;
+/// use discord_hook_core::RetryPolicy;
 ///
 /// let policy = RetryPolicy {
 ///     max_attempts: 4,

@@ -90,7 +90,7 @@ impl HttpClient {
     /// # Example
     ///
     /// ```rust,ignore
-    /// use hooksmith_core::RetryPolicy;
+    /// use discord_hook_core::RetryPolicy;
     ///
     /// let policy = RetryPolicy { max_attempts: 4, ..Default::default() };
     /// let resp = client.post_json_with_retry(url, &payload, &policy).await?;
@@ -160,7 +160,7 @@ impl Default for HttpClient {
 /// # Example
 ///
 /// ```rust
-/// use hooksmith_core::is_allowed_domain;
+/// use discord_hook_core::is_allowed_domain;
 ///
 /// assert!(is_allowed_domain("https://hooks.slack.com/services/T/B/X", &["hooks.slack.com"]));
 /// assert!(!is_allowed_domain("https://evil.com/hooks.slack.com", &["hooks.slack.com"]));
@@ -185,7 +185,7 @@ pub fn is_allowed_domain(url: &str, allowed: &[&str]) -> bool {
 /// # Example
 ///
 /// ```rust
-/// use hooksmith_core::HttpClientBuilder;
+/// use discord_hook_core::HttpClientBuilder;
 /// use std::time::Duration;
 ///
 /// let client = HttpClientBuilder::new()

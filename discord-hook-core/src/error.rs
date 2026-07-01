@@ -12,7 +12,7 @@ use thiserror::Error;
 /// #[derive(Debug, thiserror::Error)]
 /// pub enum DiscordError {
 ///     #[error(transparent)]
-///     Core(#[from] hooksmith_core::CoreError),
+///     Core(#[from] discord_hook_core::CoreError),
 ///
 ///     #[error("Discord API error {status}: {body}")]
 ///     Api { status: u16, body: String },

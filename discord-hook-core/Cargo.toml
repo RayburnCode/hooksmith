@@ -1,5 +1,5 @@
 [package]
-name          = "hooksmith-core"
+name          = "discord-hook-core"
 version.workspace    = true
 edition.workspace    = true
 license.workspace    = true
